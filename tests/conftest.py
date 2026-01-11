@@ -2,7 +2,8 @@ import pytest
 import os
 
 # app.db import 전에 환경변수 설정 (ImportError 방지)
-os.environ.setdefault("AZURE_SQL_CONNECTIONSTRING", "Driver={ODBC Driver 17 for SQL Server};Server=tcp:test.database.windows.net,1433;Database=testdb;Uid=test;Pwd=test;")
+# CI 환경에서 app/db.py가 DATABASE_URL을 요구하므로 dummy 값 설정
+os.environ.setdefault("DATABASE_URL", "sqlite:///./test_dummy.db")
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
