@@ -1,0 +1,36 @@
+name: Feature
+description: Implement an API feature (CRUD + Swagger)
+title: "[Feature] "
+labels: ["feature"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Responsibility Area
+      options: ["places/events (A)", "deals/docents (B)", "infra"]
+    validations:
+      required: true
+  - type: textarea
+    id: endpoints
+    attributes:
+      label: Endpoints to Implement
+      placeholder: |
+        - GET /places
+        - POST /places
+        - GET /places/{id}
+        ...
+    validations:
+      required: true
+  - type: checkboxes
+    id: done
+    attributes:
+      label: Definition of Done
+      options:
+        - label: All endpoints callable in /docs (Swagger Try it out)
+          required: true
+        - label: Uses AZURE_SQL_CONNECTIONSTRING from env (no hardcoded DB)
+          required: true
+        - label: PR created and code reviewed
+          required: true
+        - label: pytest passes
+          required: true

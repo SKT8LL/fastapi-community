@@ -1,0 +1,62 @@
+name: Deploy to Azure App Service (OIDC)
+
+on:
+  push:
+    branches: ["main"]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v2
+
+      - name: Install dependencies
+        run: |
+          uv venv
+          source .venv/bin/activate
+          uv pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          source .venv/bin/activate
+          pytest -v
+
+      # OIDC login to Azure
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Configure App Settings
+      - name: Configure App Settings
+        uses: azure/CLI@v2
+        with:
+          inlineScript: |
+            az webapp config appsettings set \
+              --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+              --name ${{ secrets.AZURE_WEBAPP_NAME }} \
+              --settings \
+                AZURE_SQL_CONNECTIONSTRING='${{ secrets.AZURE_SQL_CONNECTIONSTRING }}' \
+                PINECONE_API_KEY='${{ secrets.PINECONE_API_KEY }}' \
+                PINECONE_INDEX='${{ secrets.PINECONE_INDEX }}'
+
+      # Deploy
+      - name: Deploy to Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
+          package: .

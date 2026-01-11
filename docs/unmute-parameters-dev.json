@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "namePrefix": {
+      "value": "unmute"
+    },
+    "env": {
+      "value": "dev"
+    },
+    "location": {
+      "value": "eastus"
+    },
+    "postgresAdminUsername": {
+      "value": "unmute_admin"
+    },
+    "postgresAdminPassword": {
+      "value": "YourComplexPassword123!@#"
+    },
+    "searchSku": {
+      "value": "basic"
+    },
+    "openAiApiKey": {
+      "value": "sk-YOUR_OPENAI_API_KEY_HERE"
+    }
+  }
+}
