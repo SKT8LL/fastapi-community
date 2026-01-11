@@ -45,11 +45,14 @@ uv run uvicorn app.main:app --reload
 
 ## 📋 기능 분담
 
-### A 담당자 (진욱): Places & Events
+### 정필상: Places & Events
+- branch : feature/palce_event
 - CRUD 엔드포인트: GET /places, POST /places, PATCH /places/{id}, DELETE /places/{id}
 - Event 엔드포인트: GET /events, POST /events, GET /events/{id}, ...
+- CRUD에 대한 정확한 이해를 가지고 할 것.
 
-### B 담당자 (필상): Deals & Docents
+### 김진욱: Deals & Docents
+- branch : feature/deal_docent
 - Deal CRUD + POST /deals/recommend (동적 할인율 계산)
 - Docent CRUD + POST /docents/generate (템플릿 기반 생성)
 
