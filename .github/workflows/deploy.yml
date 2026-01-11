@@ -50,9 +50,10 @@ jobs:
               --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
               --name ${{ secrets.AZURE_WEBAPP_NAME }} \
               --settings \
-                AZURE_SQL_CONNECTIONSTRING='${{ secrets.AZURE_SQL_CONNECTIONSTRING }}' \
-                PINECONE_API_KEY='${{ secrets.PINECONE_API_KEY }}' \
-                PINECONE_INDEX='${{ secrets.PINECONE_INDEX }}'
+                DATABASE_URL='${{ secrets.DATABASE_URL }}'
+
+      # PINECONE_API_KEY='${{ secrets.PINECONE_API_KEY }}'
+      # PINECONE_INDEX='${{ secrets.PINECONE_INDEX }}'
 
       # Deploy
       - name: Deploy to Web App
