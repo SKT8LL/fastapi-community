@@ -15,7 +15,7 @@ router = APIRouter(prefix="/deals", tags=["deals"])
 )
 async def list_deals(db: Session = Depends(get_db)):
     # TODO
-    return []
+    return db.query(Deal).all()
 
 @router.post(
     "/",
