@@ -1,19 +1,9 @@
-from fastapi.testclient import TestClient
-from app.main import app
-from app.db import Base, engine
-from app.models.deal import Deal
 from datetime import datetime, timedelta
 
-# Create tables for test
-Base.metadata.create_all(bind=engine)
-
-client = TestClient(app)
-
-def test_deal_lifecycle():
+def test_deal_lifecycle(client):
     # 1. Create a fresh deal (POST)
-    # create_deal expects: event_id, discount_rate, starts_at, ends_at
     payload = {
-        "event_id": 999,  # 임의의 ID
+        "event_id": 999,
         "discount_rate": 25,
         "starts_at": datetime.utcnow().isoformat(),
         "ends_at": (datetime.utcnow() + timedelta(days=7)).isoformat()
@@ -23,16 +13,15 @@ def test_deal_lifecycle():
     assert response.status_code == 201
     data = response.json()
     
-    # 생성된 데이터 검증
     deal_id = data["id"]
     assert data["discount_rate"] == 25
     assert data["event_id"] == 999
 
-    # 2. List all deals (GET) should contain the new deal
+    # 2. List all deals (GET)
     response = client.get("/deals/")
     assert response.status_code == 200
     deals = response.json()
-    # 방금 만든 deal_id가 리스트 안에 있는지 확인
+    
     found = False
     for d in deals:
         if d["id"] == deal_id:

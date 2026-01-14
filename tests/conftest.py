@@ -1,39 +1,43 @@
 import pytest
-import os
-
-# app.db import 전에 환경변수 설정 (ImportError 방지)
-# CI 환경에서 app/db.py가 DATABASE_URL을 요구하므로 dummy 값 설정
-os.environ.setdefault("DATABASE_URL", "sqlite:///./test_dummy.db")
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.db import Base, get_db
-
-# Mock creation of tables in production DB (since we don't have ODBC driver in test env)
-from unittest.mock import MagicMock
-Base.metadata.create_all = MagicMock()
+from sqlalchemy.pool import StaticPool
+from fastapi.testclient import TestClient
 
 from app.main import app
+from app.db import Base, get_db
+# Ensure all models are imported so Base knows about them
+from app.models.deal import Deal
+from app.models.docent import Docent
 
-# 테스트 DB (in-memory SQLite, 또는 별도 테스트 Azure SQL)
-# 로컬 개발 환경에서 빠르게 돌리기 위해 SQLite 사용
-SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///./test.db"
+# Use an in-memory SQLite database for testing, with StaticPool
+# StaticPool is important: it lets multiple threads share the same in-memory DB connection.
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+
 engine = create_engine(
-    SQLALCHEMY_TEST_DATABASE_URL, connect_args={"check_same_thread": False}
+    SQLALCHEMY_DATABASE_URL, 
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool 
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base.metadata.create_all(bind=engine)
 
-def override_get_db():
+@pytest.fixture(name="session")
+def session_fixture():
+    # Create tables
+    Base.metadata.create_all(bind=engine)
+    db = TestingSessionLocal()
     try:
-        db = TestingSessionLocal()
         yield db
     finally:
         db.close()
+        # Drop tables after test is done (optional, considering we use a fresh DB or memory)
+        Base.metadata.drop_all(bind=engine)
 
-app.dependency_overrides[get_db] = override_get_db
+@pytest.fixture(name="client")
+def client_fixture(session):
+    def override_get_db():
+        yield session
 
-@pytest.fixture
-def client():
-    from fastapi.testclient import TestClient
-    return TestClient(app)
+    app.dependency_overrides[get_db] = override_get_db
+    yield TestClient(app)
+    app.dependency_overrides.clear()
