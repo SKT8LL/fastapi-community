@@ -25,6 +25,12 @@ async def list_docents(db: Session = Depends(get_db)):
 )
 async def create_docent(docent: DocentCreate, db: Session = Depends(get_db)):
     # TODO
+
+    new_decent = Docent(**docent.dict)
+    db.add(new_decent)
+    db.commit()
+    db.refresh(new_decent)
+
     raise NotImplementedError("TODO")
 
 @router.get(
