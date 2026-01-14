@@ -44,7 +44,7 @@ async def get_docent(docent_id: int, db: Session = Depends(get_db)):
     docent = db.query(Docent).filter(Docent.id == docent_id).first()
 
     if docent is None:
-        raise HTTPException(status_code=404, detail="Deal Not Found")
+        raise HTTPException(status_code=404, detail="Docent Not Found")
 
     return docent
 
@@ -55,7 +55,14 @@ async def get_docent(docent_id: int, db: Session = Depends(get_db)):
 )
 async def delete_docent(docent_id: int, db: Session = Depends(get_db)):
     # TODO
-    raise NotImplementedError("TODO")
+
+    docent = db.query(Docent).filter(Docent.id == docent_id).first()
+
+    if docent is None:
+        raise HTTPException(status_code=404,detail="Docent Not Found")
+
+    db.delete(docent)
+    db.commit()
 
 # Special endpoint: Generate Docent Content
 class DocentGenerateInput(BaseModel):
