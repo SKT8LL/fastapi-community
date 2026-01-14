@@ -14,7 +14,8 @@ router = APIRouter(prefix="/docents", tags=["docents"])
 )
 async def list_docents(db: Session = Depends(get_db)):
     # TODO
-    return []
+
+    return db.query(Docent).all()
 
 @router.post(
     "/",
