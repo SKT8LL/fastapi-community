@@ -26,12 +26,12 @@ async def list_docents(db: Session = Depends(get_db)):
 async def create_docent(docent: DocentCreate, db: Session = Depends(get_db)):
     # TODO
 
-    new_decent = Docent(**docent.dict)
-    db.add(new_decent)
+    new_docent = Docent(**docent.dict())
+    db.add(new_docent)
     db.commit()
-    db.refresh(new_decent)
+    db.refresh(new_docent)
 
-    raise NotImplementedError("TODO")
+    return new_docent
 
 @router.get(
     "/{docent_id}",
@@ -40,7 +40,13 @@ async def create_docent(docent: DocentCreate, db: Session = Depends(get_db)):
 )
 async def get_docent(docent_id: int, db: Session = Depends(get_db)):
     # TODO
-    raise NotImplementedError("TODO")
+
+    docent = db.query(Docent).filter(Docent.id == docent_id).first()
+
+    if docent is None:
+        raise HTTPException(status_code=404, detail="Deal Not Found")
+
+    return docent
 
 @router.delete(
     "/{docent_id}",
