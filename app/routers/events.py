@@ -12,8 +12,13 @@ router = APIRouter(prefix="/events", tags=["events"])
     response_model=list[EventResponse]
 )
 async def list_events(db: Session = Depends(get_db)):
-    # TODO
-    return []
+    """List all events.
+    
+    모든 이벤트 목록을 조회합니다.
+    """
+    # DB의 'events' 테이블에서 모든 데이터(all)를 조회(select)해서 반환합니다.
+    # SELECT * FROM events;
+    return db.query(Event).all()
 
 @router.post(
     "/",
@@ -22,8 +27,21 @@ async def list_events(db: Session = Depends(get_db)):
     status_code=status.HTTP_201_CREATED
 )
 async def create_event(event: EventCreate, db: Session = Depends(get_db)):
-    # TODO
-    raise NotImplementedError("TODO")
+    """Create a new event.
+    
+    새로운 이벤트를 생성합니다.
+    """
+    # 1. Pydantic 모델(event)을 DB 모델(Event)로 변환합니다.
+    new_event = Event(**event.dict())
+    
+    # 2. 세션에 추가하고 저장(Commit)합니다.
+    db.add(new_event)
+    db.commit()
+    
+    # 3. 생성된 데이터(ID 등)를 최신화합니다.
+    db.refresh(new_event)
+    
+    return new_event
 
 @router.get(
     "/{event_id}",
@@ -31,8 +49,18 @@ async def create_event(event: EventCreate, db: Session = Depends(get_db)):
     response_model=EventResponse
 )
 async def get_event(event_id: int, db: Session = Depends(get_db)):
-    # TODO
-    raise NotImplementedError("TODO")
+    """Get an event.
+    
+    특정 ID의 이벤트를 상세 조회합니다.
+    """
+    # ID가 일치하는 이벤트를 찾습니다.
+    event = db.query(Event).filter(Event.id == event_id).first()
+    
+    # 없으면 404 에러를 반환합니다.
+    if not event:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
+        
+    return event
 
 @router.patch(
     "/{event_id}",
@@ -40,8 +68,28 @@ async def get_event(event_id: int, db: Session = Depends(get_db)):
     response_model=EventResponse
 )
 async def update_event(event_id: int, event: EventUpdate, db: Session = Depends(get_db)):
-    # TODO
-    raise NotImplementedError("TODO")
+    """Update an event.
+    
+    이벤트 정보를 수정합니다.
+    """
+    # 1. 수정할 이벤트를 찾습니다.
+    db_event = db.query(Event).filter(Event.id == event_id).first()
+    if not db_event:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
+    
+    # 2. 업데이트할 데이터만 추출합니다 (exclude_unset=True).
+    update_data = event.dict(exclude_unset=True)
+    
+    # 3. 값을 변경합니다.
+    for key, value in update_data.items():
+        setattr(db_event, key, value)
+        
+    # 4. 저장합니다.
+    db.add(db_event)
+    db.commit()
+    db.refresh(db_event)
+    
+    return db_event
 
 @router.delete(
     "/{event_id}",
@@ -49,41 +97,37 @@ async def update_event(event_id: int, event: EventUpdate, db: Session = Depends(
     status_code=status.HTTP_204_NO_CONTENT
 )
 async def delete_event(event_id: int, db: Session = Depends(get_db)):
-    # TODO
-    raise NotImplementedError("TODO")
+    """Delete an event.
+    
+    이벤트를 삭제합니다.
+    """
+    # 1. 삭제할 이벤트를 찾습니다.
+    event = db.query(Event).filter(Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Event not found")
+    
+    # 2. 삭제하고 커밋합니다.
+    db.delete(event)
+    db.commit()
+    
+    return
 
 # Special endpoint: Get events by place
 @router.get(
     "/places/{place_id}/events",
     summary="List events for a place",
-    tags=["places"], # Or events, logic says it's about events in a place. But prompt says 'GET /places/{place_id}/events'. 
-                     # However, to avoid circular import or router confusion, usually implemented in events router or places router.
-                     # Prompt lists it under 'Events (A 담당자)'. So I implement it here.
-                     # But path is /places/... so it might conflict if places router captures /places/{id} first.
-                     # Places router prefix is /places. 
-                     # If I put this in events router, I must use absolute path or include this router with different prefix?
-                     # No, FastAPI allows multiple routers.
-                     # But prefix '/events' makes it /events/places/{place_id}/events if I'm not careful.
-                     # I should use `@router.get("/places/{place_id}/events", ...)` but wait, router prefix is `/events`.
-                     # So it becomes `/events/places/{place_id}/events` which is wrong.
-                     # It should be `/places/{place_id}/events`.
-                     # So I should probably add another router for this specific path OR put it in places router.
-                     # Guide says "Events (A 담당자)" implements it.
-                     # I will put it in `app/routers/events.py` but use a separate router or modify prefix usage.
-                     # Or just define it with absolute path? verify if APIRouter supports overriding prefix.
-                     # Actually, usually such nested resources are better in the parent resource router (places).
-                     # But the assignment says A does Events.
-                     # Let's check `app/routers/places.py`... I already wrote it.
-                     # I will add it to `app/routers/events.py` but bind it to a new router without prefix or just handle it.
-                     # Simpler: Just put it in `places.py`? 
-                     # No, A works on events.py too.
-                     # Let's create a separate router in events.py that has no prefix, or handles /places/{place_id}/events.
+
                      
     response_model=list[EventResponse]
 )
 async def list_events_by_place(place_id: int, db: Session = Depends(get_db)):
-    # TODO
-    return []
+    """List events for a place.
+
+    특정 장소(Place)에 속한 이벤트 목록을 조회합니다.
+    """
+    # 'place_id'가 일치하는 이벤트들만 필터링해서 가져옵니다.
+    # SELECT * FROM events WHERE place_id = {place_id};
+    return db.query(Event).filter(Event.place_id == place_id).all()
 # Wait, if I want it to be /places/{place_id}/events, and keeping it in events.py:
 # I can instantiate another router or just add it to the main `app` in `main.py` directly from events.py? No.
 # Best practice: `events.router` handles `/events`.
