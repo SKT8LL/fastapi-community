@@ -14,6 +14,9 @@ router = APIRouter(prefix="/docents", tags=["docents"])
 )
 async def list_docents(db: Session = Depends(get_db)):
     # TODO
+    '''
+    docents를 리스트 형태로 반환.
+    '''
 
     return db.query(Docent).all()
 
@@ -25,6 +28,10 @@ async def list_docents(db: Session = Depends(get_db)):
 )
 async def create_docent(docent: DocentCreate, db: Session = Depends(get_db)):
     # TODO
+
+    '''
+    docent 생성.
+    '''
 
     new_docent = Docent(**docent.dict())
     db.add(new_docent)
@@ -40,6 +47,7 @@ async def create_docent(docent: DocentCreate, db: Session = Depends(get_db)):
 )
 async def get_docent(docent_id: int, db: Session = Depends(get_db)):
     # TODO
+    '''해당되는 docent를 반환'''
 
     docent = db.query(Docent).filter(Docent.id == docent_id).first()
 
@@ -55,7 +63,9 @@ async def get_docent(docent_id: int, db: Session = Depends(get_db)):
 )
 async def delete_docent(docent_id: int, db: Session = Depends(get_db)):
     # TODO
-
+    '''
+    해당되는 docent를 삭제.
+    '''
     docent = db.query(Docent).filter(Docent.id == docent_id).first()
 
     if docent is None:

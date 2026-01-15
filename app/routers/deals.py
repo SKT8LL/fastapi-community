@@ -15,6 +15,7 @@ router = APIRouter(prefix="/deals", tags=["deals"])
 )
 async def list_deals(db: Session = Depends(get_db)):
     # TODO
+    ''' deal을 list 형태로 반환'''
     return db.query(Deal).all() # db.query()를 통해 Deal에 있는 모든 데이터들을 가져온다.
 
 @router.post(
@@ -25,6 +26,9 @@ async def list_deals(db: Session = Depends(get_db)):
 )
 async def create_deal(deal: DealCreate, db: Session = Depends(get_db)):
     # TODO
+    '''
+    deal을 생성.
+    '''
     new_deal = Deal(**deal.dict()) # deal를 처리할 수 있는 형태로.
     db.add(new_deal) # DB 세션에 추가.
     db.commit() # 변경사항 저장.
@@ -39,6 +43,9 @@ async def create_deal(deal: DealCreate, db: Session = Depends(get_db)):
 )
 async def get_deal(deal_id: int, db: Session = Depends(get_db)):
     # TODO
+    '''
+    해당되는 deal을 반환.
+    '''
     deal = db.query(Deal).filter(Deal.id == deal_id).first() # deal_id인 멤버를 DB에서 찾기.
 
     if deal is None:
@@ -54,7 +61,9 @@ async def get_deal(deal_id: int, db: Session = Depends(get_db)):
 )
 async def delete_deal(deal_id: int, db: Session = Depends(get_db)):
     # TODO
-
+    '''
+    deal을 삭제.
+    '''
     deal = db.query(Deal).filter(Deal.id == deal_id).first()
 
     if deal is None:
