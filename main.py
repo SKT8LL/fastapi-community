@@ -1,6 +1,10 @@
-def main():
-    print("Hello from fastapi-community!")
+from fastapi import FastAPI
 
+app = FastAPI()
 
-if __name__ == "__main__":
-    main()
+@app.get("/itmes/")
+async def read_items(q: str | None = None):
+    results = {"itmes":[{{"item_id":"Foo"},{"item_id":"Bar"}}]}
+    if q:
+        results.update({"q":q})
+    return results    

@@ -14,7 +14,11 @@ router = APIRouter(prefix="/docents", tags=["docents"])
 )
 async def list_docents(db: Session = Depends(get_db)):
     # TODO
-    return []
+    '''
+    docents를 리스트 형태로 반환.
+    '''
+
+    return db.query(Docent).all()
 
 @router.post(
     "/",
@@ -24,7 +28,17 @@ async def list_docents(db: Session = Depends(get_db)):
 )
 async def create_docent(docent: DocentCreate, db: Session = Depends(get_db)):
     # TODO
-    raise NotImplementedError("TODO")
+
+    '''
+    docent 생성.
+    '''
+
+    new_docent = Docent(**docent.dict())
+    db.add(new_docent)
+    db.commit()
+    db.refresh(new_docent)
+
+    return new_docent
 
 @router.get(
     "/{docent_id}",
@@ -33,7 +47,14 @@ async def create_docent(docent: DocentCreate, db: Session = Depends(get_db)):
 )
 async def get_docent(docent_id: int, db: Session = Depends(get_db)):
     # TODO
-    raise NotImplementedError("TODO")
+    '''해당되는 docent를 반환'''
+
+    docent = db.query(Docent).filter(Docent.id == docent_id).first()
+
+    if docent is None:
+        raise HTTPException(status_code=404, detail="Docent Not Found")
+
+    return docent
 
 @router.delete(
     "/{docent_id}",
@@ -42,7 +63,16 @@ async def get_docent(docent_id: int, db: Session = Depends(get_db)):
 )
 async def delete_docent(docent_id: int, db: Session = Depends(get_db)):
     # TODO
-    raise NotImplementedError("TODO")
+    '''
+    해당되는 docent를 삭제.
+    '''
+    docent = db.query(Docent).filter(Docent.id == docent_id).first()
+
+    if docent is None:
+        raise HTTPException(status_code=404,detail="Docent Not Found")
+
+    db.delete(docent)
+    db.commit()
 
 # Special endpoint: Generate Docent Content
 class DocentGenerateInput(BaseModel):
